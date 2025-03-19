@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World's Most Spoken Languages</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            flex: 1;
+            min-height: 500px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .legend-table {
+            width: 300px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .legend-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .legend-table th, .legend-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .legend-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .legend-table tr:last-child td {
+            border-bottom: none;
+        }
+        .legend-table .language-name {
+            font-weight: normal;
+        }
+        .legend-table .language-name.bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>World's Most Spoken Languages</h1>
+        <div class="content-wrapper">
+            <div class="chart-container">
+                <canvas id="worldLanguagesChart"></canvas>
+            </div>
+            <div class="legend-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Language</th>
+                            <th>Total Speakers (B)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="legendTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const worldLanguagesData = {
+            labels: ['English', 'Mandarin', 'Hindi', 'Spanish', 'Arabic', 'French', 'Bengali', 'Portuguese', 'Russian', 'Urdu'],
+            l1: [0.380, 0.941, 0.345, 0.486, 0.000, 0.074, 0.237, 0.236, 0.148, 0.070],
+            l2: [1.135, 0.199, 0.264, 0.074, 0.332, 0.238, 0.041, 0.027, 0.108, 0.168]
+        };
+
+        // Calculate total speakers for sorting
+        const totalSpeakers = worldLanguagesData.labels.map((_, index) => 
+            worldLanguagesData.l1[index] + worldLanguagesData.l2[index]
+        );
+
+        // Sort indices based on total speakers
+        const sortedIndices = Array.from({ length: worldLanguagesData.labels.length }, (_, i) => i)
+            .sort((a, b) => totalSpeakers[b] - totalSpeakers[a]);
+
+        // Sort all arrays based on total speakers
+        worldLanguagesData.labels = sortedIndices.map(i => worldLanguagesData.labels[i]);
+        worldLanguagesData.l1 = sortedIndices.map(i => worldLanguagesData.l1[i]);
+        worldLanguagesData.l2 = sortedIndices.map(i => worldLanguagesData.l2[i]);
+
+        // Define consistent colors for languages
+        const languageColors = {
+            'English': 'rgba(255, 99, 132, 0.7)',    // Red
+            'Spanish': 'rgba(54, 162, 235, 0.7)',    // Blue
+            'Russian': 'rgba(255, 206, 86, 0.7)',    // Yellow
+            'French': 'rgba(153, 102, 255, 0.7)',    // Purple
+            'Portuguese': 'rgba(199, 199, 199, 0.7)', // Gray
+            'Mandarin': 'rgba(255, 128, 0, 0.7)',    // Dark Orange
+            'Hindi': 'rgba(128, 0, 128, 0.7)',       // Purple
+            'Arabic': 'rgba(0, 128, 0, 0.7)',        // Green
+            'Bengali': 'rgba(128, 128, 0, 0.7)',     // Olive
+            'Urdu': 'rgba(0, 128, 128, 0.7)'         // Teal
+        };
+
+        function getLanguageColor(language) {
+            return languageColors[language] || 'rgba(169, 169, 169, 0.7)';
+        }
+
+        // Create the chart
+        const chart = new Chart(document.getElementById('worldLanguagesChart'), {
+            type: 'bar',
+            data: {
+                labels: worldLanguagesData.labels,
+                datasets: [
+                    {
+                        label: 'Native Speakers (L1)',
+                        data: worldLanguagesData.l1,
+                        backgroundColor: worldLanguagesData.labels.map(label => getLanguageColor(label)),
+                        borderColor: worldLanguagesData.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
+                        borderWidth: 1,
+                        stack: 'Stack 0'
+                    },
+                    {
+                        label: 'Secondary Speakers (L2)',
+                        data: worldLanguagesData.l2,
+                        backgroundColor: worldLanguagesData.labels.map(label => getLanguageColor(label).replace('0.7', '0.4')),
+                        borderColor: worldLanguagesData.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
+                        borderWidth: 1,
+                        stack: 'Stack 0'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'World\'s Most Spoken Languages by Native and Secondary Speakers',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y.toFixed(3);
+                                const label = context.dataset.label;
+                                return `${label}: ${value} billion speakers`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        formatter: function(value, context) {
+                            if (value > 0) {
+                                return value.toFixed(3) + 'B';
+                            }
+                            return '';
+                        },
+                        color: '#000',
+                        font: {
+                            weight: 'normal',
+                            size: 10
+                        },
+                        anchor: 'center',
+                        align: 'center',
+                        offset: 0
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Speakers (Billions)'
+                        }
+                    },
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            font: function(context) {
+                                const label = context.tick.label;
+                                return {
+                                    weight: (label === 'Hindi' || label === 'Bengali') ? 'bold' : 'normal'
+                                };
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Populate legend table
+        const legendTableBody = document.getElementById('legendTableBody');
+        worldLanguagesData.labels.forEach((language, index) => {
+            const total = (worldLanguagesData.l1[index] + worldLanguagesData.l2[index]).toFixed(3);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="language-name ${(language === 'Hindi' || language === 'Bengali') ? 'bold' : ''}">${language}</td>
+                <td>${total}</td>
+            `;
+            legendTableBody.appendChild(row);
+        });
+    </script>
+</body>
+</html> 

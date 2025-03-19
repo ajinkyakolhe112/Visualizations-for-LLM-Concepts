@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Distribution Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .chart-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+        .chart-container {
+            flex: 1;
+            min-height: 400px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .chart-container.pie {
+            flex: 0 0 48%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Language Distribution Statistics</h1>
+        
+        <!-- Pie Charts -->
+        <div class="chart-row">
+            <div class="chart-container pie">
+                <canvas id="totalSpeakersChart"></canvas>
+            </div>
+            <div class="chart-container pie">
+                <canvas id="internetUsageChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const languageData = {
+            speakers: {
+                labels: ['English', 'Mandarin', 'Hindi', 'Spanish', 'Arabic', 'French', 'Bengali', 'Portuguese', 'Russian', 'Urdu'],
+                l1: [380, 941, 345, 486, 0, 74, 237, 236, 148, 70],
+                l2: [1135, 199, 264, 74, 332, 238, 41, 27, 108, 168]
+            },
+            internetUsage: {
+                labels: ['English', 'Spanish', 'Russian', 'German', 'French', 'Japanese', 'Portuguese', 'Mandarin', 'Others'],
+                data: [49.3, 6.0, 3.9, 5.6, 4.4, 5.1, 3.8, 1.2, 20.7]
+            }
+        };
+
+        // Define consistent colors for languages
+        const languageColors = {
+            'English': 'rgba(255, 99, 132, 0.7)',    // Red
+            'Spanish': 'rgba(54, 162, 235, 0.7)',    // Blue
+            'Russian': 'rgba(255, 206, 86, 0.7)',    // Yellow
+            'German': 'rgba(75, 192, 192, 0.7)',     // Teal
+            'French': 'rgba(153, 102, 255, 0.7)',    // Purple
+            'Japanese': 'rgba(106, 76, 147, 0.7)',   // Deep Purple
+            'Portuguese': 'rgba(199, 199, 199, 0.7)', // Gray
+            'Mandarin': 'rgba(255, 128, 0, 0.7)',    // Dark Orange
+            'Hindi': 'rgba(128, 0, 128, 0.7)',       // Purple
+            'Arabic': 'rgba(0, 128, 0, 0.7)',        // Green
+            'Bengali': 'rgba(128, 128, 0, 0.7)',     // Olive
+            'Urdu': 'rgba(0, 128, 128, 0.7)',        // Teal
+            'Others': 'rgba(169, 169, 169, 0.7)'     // Dark Gray
+        };
+
+        function getLanguageColor(language) {
+            return languageColors[language] || 'rgba(169, 169, 169, 0.7)';
+        }
+
+        // Calculate total speakers for each language
+        const totalSpeakers = languageData.speakers.labels.map((lang, index) => 
+            languageData.speakers.l1[index] + languageData.speakers.l2[index]
+        );
+
+        // Create Total Speakers Pie Chart
+        new Chart(document.getElementById('totalSpeakersChart'), {
+            type: 'pie',
+            data: {
+                labels: languageData.speakers.labels,
+                datasets: [{
+                    data: totalSpeakers,
+                    backgroundColor: languageData.speakers.labels.map(label => getLanguageColor(label)),
+                    borderColor: languageData.speakers.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
+                    borderWidth: 1,
+                    offset: languageData.speakers.labels.map(label => 
+                        (label === 'Hindi' || label === 'Bengali') ? 20 : 0
+                    )
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Total Speakers by Language (Millions)',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const color = data.datasets[0].backgroundColor[i];
+                                    return {
+                                        text: `${label}: ${value}M`,
+                                        fillStyle: color,
+                                        strokeStyle: color,
+                                        lineWidth: 1
+                                    };
+                                });
+                            }
+                        }
+                    },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            const label = ctx.chart.data.labels[ctx.dataIndex];
+                            return `${label}: ${value}M`;
+                        },
+                        color: '#000',
+                        font: {
+                            weight: 'normal'
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Create Internet Usage Pie Chart
+        new Chart(document.getElementById('internetUsageChart'), {
+            type: 'pie',
+            data: {
+                labels: languageData.internetUsage.labels,
+                datasets: [{
+                    data: languageData.internetUsage.data,
+                    backgroundColor: languageData.internetUsage.labels.map(label => getLanguageColor(label)),
+                    borderColor: languageData.internetUsage.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
+                    borderWidth: 1,
+                    offset: languageData.internetUsage.labels.map(label => 
+                        (label === 'Hindi' || label === 'Bengali') ? 20 : 0
+                    )
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Internet Usage by Language (%)',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const color = data.datasets[0].backgroundColor[i];
+                                    return {
+                                        text: `${label}: ${value}%`,
+                                        fillStyle: color,
+                                        strokeStyle: color,
+                                        lineWidth: 1
+                                    };
+                                });
+                            }
+                        }
+                    },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            const label = ctx.chart.data.labels[ctx.dataIndex];
+                            return `${label}: ${value}%`;
+                        },
+                        color: '#000',
+                        font: {
+                            weight: 'normal'
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    </script>
+</body>
+</html> 

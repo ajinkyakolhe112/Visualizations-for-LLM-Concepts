@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normalized Language Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        .chart-container {
+            flex: 1;
+            min-height: 500px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .legend-table {
+            width: 300px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .legend-table h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .color-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Normalized Language Comparison</h1>
+        <div class="content-wrapper">
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+            <div class="legend-table">
+                <h2>Language Statistics</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Language</th>
+                            <th>Speakers (%)</th>
+                            <th>Internet (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="legendTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const languageData = {
+            speakers: {
+                labels: ['English', 'Mandarin', 'Hindi', 'Spanish', 'Arabic', 'French', 'Bengali', 'Portuguese', 'Russian', 'Urdu'],
+                l1: [380, 941, 345, 486, 0, 74, 237, 236, 148, 70],
+                l2: [1135, 199, 264, 74, 332, 238, 41, 27, 108, 168]
+            },
+            internetUsage: {
+                labels: ['English', 'Spanish', 'Russian', 'German', 'French', 'Japanese', 'Portuguese', 'Mandarin', 'Others'],
+                data: [49.3, 6.0, 3.9, 5.6, 4.4, 5.1, 3.8, 1.2, 20.7]
+            }
+        };
+
+        // Define consistent colors for languages
+        const languageColors = {
+            'English': 'rgba(255, 99, 132, 0.7)',    // Red
+            'Spanish': 'rgba(54, 162, 235, 0.7)',    // Blue
+            'Russian': 'rgba(255, 206, 86, 0.7)',    // Yellow
+            'German': 'rgba(75, 192, 192, 0.7)',     // Teal
+            'French': 'rgba(153, 102, 255, 0.7)',    // Purple
+            'Japanese': 'rgba(106, 76, 147, 0.7)',   // Deep Purple
+            'Portuguese': 'rgba(199, 199, 199, 0.7)', // Gray
+            'Mandarin': 'rgba(255, 128, 0, 0.7)',    // Dark Orange
+            'Hindi': 'rgba(128, 0, 128, 0.7)',       // Purple
+            'Arabic': 'rgba(0, 128, 0, 0.7)',        // Green
+            'Bengali': 'rgba(128, 128, 0, 0.7)',     // Olive
+            'Urdu': 'rgba(0, 128, 128, 0.7)',        // Teal
+            'Others': 'rgba(169, 169, 169, 0.7)'     // Dark Gray
+        };
+
+        function getLanguageColor(language) {
+            return languageColors[language] || 'rgba(169, 169, 169, 0.7)';
+        }
+
+        // Prepare data for comparison
+        const comparisonData = {
+            labels: [
+                'English', 'Mandarin', 'Hindi', 'Spanish', 'Arabic', 
+                'French', 'Bengali', 'Portuguese', 'Russian', 'Urdu', 'Others'
+            ],
+            speakers: [],
+            internet: [],
+            rawSpeakers: [] // Store raw speaker numbers
+        };
+
+        // Calculate total speakers for each language
+        const totalSpeakers = languageData.speakers.labels.map((lang, index) => 
+            languageData.speakers.l1[index] + languageData.speakers.l2[index]
+        );
+
+        // Store raw speaker numbers
+        comparisonData.rawSpeakers = totalSpeakers;
+
+        // Calculate sums for normalization
+        const totalSpeakersSum = totalSpeakers.reduce((a, b) => a + b, 0);
+
+        // Normalize speaker values
+        comparisonData.speakers = totalSpeakers.map(value => (value / totalSpeakersSum) * 100);
+
+        // Map internet usage data to match the labels
+        comparisonData.internet = comparisonData.labels.map(label => {
+            const index = languageData.internetUsage.labels.indexOf(label);
+            return index !== -1 ? languageData.internetUsage.data[index] : 0;
+        });
+
+        // Create the comparison chart
+        new Chart(document.getElementById('comparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: comparisonData.labels,
+                datasets: [{
+                    label: 'Total Speakers (Normalized %)',
+                    data: comparisonData.speakers,
+                    backgroundColor: comparisonData.labels.map(label => getLanguageColor(label)),
+                    borderColor: comparisonData.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
+                    borderWidth: 1
+                }, {
+                    label: 'Internet Usage (%)',
+                    data: comparisonData.internet,
+                    backgroundColor: comparisonData.labels.map(label => getLanguageColor(label).replace('0.7', '0.4')),
+                    borderColor: comparisonData.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Normalized Language Comparison: Total Speakers vs Internet Usage',
+                        font: { size: 16 }
+                    },
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label;
+                                const value = context.parsed.y.toFixed(1);
+                                const index = context.dataIndex;
+                                
+                                if (label === 'Total Speakers (Normalized %)') {
+                                    return [
+                                        `${label}: ${value}%`,
+                                        `Actual: ${comparisonData.rawSpeakers[index]}M speakers`
+                                    ];
+                                } else {
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#000',
+                        font: {
+                            weight: 'normal',
+                            size: 10
+                        },
+                        formatter: function(value, context) {
+                            const index = context.dataIndex;
+                            if (context.dataset.label === 'Total Speakers (Normalized %)') {
+                                return `${value.toFixed(1)}%\n${comparisonData.rawSpeakers[index]}M`;
+                            } else {
+                                return `${value.toFixed(1)}%`;
+                            }
+                        },
+                        anchor: 'center',
+                        align: 'center',
+                        offset: 0,
+                        display: function(context) {
+                            return context.dataset.data[context.dataIndex] > 0;
+                        },
+                        padding: 2,
+                        textAlign: 'center',
+                        rotation: 0,
+                        backgroundColor: function(context) {
+                            return context.dataset.backgroundColor;
+                        },
+                        borderRadius: 2
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Percentage (%)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: function(context) {
+                                const label = context.tick.label;
+                                return {
+                                    weight: (label === 'Hindi' || label === 'Bengali') ? 'bold' : 'normal'
+                                };
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Create the legend table
+        const tableBody = document.getElementById('legendTableBody');
+        comparisonData.labels.forEach((label, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <span class="color-dot" style="background-color: ${getLanguageColor(label)}"></span>
+                    ${label}
+                </td>
+                <td>${comparisonData.speakers[index].toFixed(1)}%</td>
+                <td>${comparisonData.internet[index].toFixed(1)}%</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    </script>
+</body>
+</html>
