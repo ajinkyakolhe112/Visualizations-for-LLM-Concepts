@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Usage Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        :root {
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-card {
+            background-color: var(--card-background);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 800px;
+            margin: 15px auto;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .description {
+            text-align: center;
+            margin: 5px 0 30px;
+            color: #475569;
+            font-size: 1rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .chart-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chart-subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1200px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 500px;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            .chart-card h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Language Usage Comparison</h1>
+    <p class="description">Comparison between total number of speakers and website language usage across different languages.</p>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h2>Total Speakers by Language</h2>
+            <p class="chart-subtitle">Number of speakers (L1 + L2) in millions</p>
+            <div class="chart-container">
+                <canvas id="speakersChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h2>Website Language Distribution</h2>
+            <p class="chart-subtitle">Percentage of websites using each language</p>
+            <div class="chart-container">
+                <canvas id="websiteChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Color mapping for consistent colors across charts
+        const colorMap = {
+            'English': 'rgb(255, 99, 132)',      // Red
+            'Mandarin Chinese': 'rgb(54, 162, 235)',  // Blue
+            'Hindi': 'rgb(255, 206, 86)',        // Yellow
+            'Spanish': 'rgb(75, 192, 192)',      // Teal
+            'Modern Standard Arabic': 'rgb(153, 102, 255)', // Purple
+            'French': 'rgb(255, 159, 64)',       // Orange
+            'Bengali': 'rgb(255, 99, 255)',      // Pink
+            'Portuguese': 'rgb(54, 235, 162)',   // Green
+            'Russian': 'rgb(255, 132, 99)',      // Coral
+            'Indonesian': 'rgb(86, 255, 206)',   // Mint
+            'Urdu': 'rgb(235, 54, 162)',         // Magenta
+            'Standard German': 'rgb(99, 255, 132)', // Light Green
+            'Japanese': 'rgb(162, 54, 235)',     // Deep Purple
+            'Nigerian Pidgin': 'rgb(255, 206, 86)', // Yellow
+            'Egyptian Arabic': 'rgb(75, 192, 192)', // Teal
+            'Marathi': 'rgb(153, 102, 255)',     // Purple
+            'Vietnamese': 'rgb(255, 159, 64)',   // Orange
+            'Telugu': 'rgb(255, 99, 255)',       // Pink
+            'Hausa': 'rgb(54, 235, 162)',        // Green
+            'Turkish': 'rgb(255, 132, 99)',      // Coral
+            'Western Punjabi': 'rgb(86, 255, 206)', // Mint
+            'Swahili': 'rgb(235, 54, 162)',      // Magenta
+            'Tagalog': 'rgb(99, 255, 132)',      // Light Green
+            'Tamil': 'rgb(162, 54, 235)',        // Deep Purple
+            'Yue Chinese': 'rgb(255, 206, 86)',  // Yellow
+            'Wu Chinese': 'rgb(75, 192, 192)',   // Teal
+            'Iranian Persian': 'rgb(153, 102, 255)', // Purple
+            'Korean': 'rgb(255, 159, 64)',       // Orange
+            'Thai': 'rgb(255, 99, 255)',         // Pink
+            'Javanese': 'rgb(54, 235, 162)',     // Green
+            'Italian': 'rgb(255, 132, 99)',      // Coral
+            'Gujarati': 'rgb(86, 255, 206)',     // Mint
+            'Levantine Arabic': 'rgb(235, 54, 162)', // Magenta
+            'Amharic': 'rgb(99, 255, 132)',      // Light Green
+            'Kannada': 'rgb(162, 54, 235)',      // Deep Purple
+            'Bhojpuri': 'rgb(255, 206, 86)',     // Yellow
+            'Sudanese Arabic': 'rgb(75, 192, 192)', // Teal
+            'Dutch': 'rgb(153, 102, 255)',       // Purple
+            'Polish': 'rgb(255, 159, 64)',       // Orange
+            'Persian': 'rgb(255, 99, 255)',      // Pink
+            'Chinese': 'rgb(54, 235, 162)',      // Green
+            'Czech': 'rgb(255, 132, 99)',        // Coral
+            'Ukrainian': 'rgb(86, 255, 206)',    // Mint
+            'Hungarian': 'rgb(235, 54, 162)',    // Magenta
+            'Arabic': 'rgb(99, 255, 132)',       // Light Green
+            'Swedish': 'rgb(162, 54, 235)',      // Deep Purple
+            'Romanian': 'rgb(255, 206, 86)',     // Yellow
+            'Greek': 'rgb(75, 192, 192)',        // Teal
+            'Hebrew': 'rgb(153, 102, 255)',      // Purple
+            'Danish': 'rgb(255, 159, 64)',       // Orange
+            'Finnish': 'rgb(255, 99, 255)',      // Pink
+            'Slovak': 'rgb(54, 235, 162)',       // Green
+            'Bulgarian': 'rgb(255, 132, 99)',    // Coral
+            'Croatian': 'rgb(86, 255, 206)',     // Mint
+            'Serbian': 'rgb(235, 54, 162)',      // Magenta
+            'Lithuanian': 'rgb(99, 255, 132)',   // Light Green
+            'Norwegian Bokmål': 'rgb(162, 54, 235)', // Deep Purple
+            'Slovenian': 'rgb(255, 206, 86)',    // Yellow
+            'Catalan': 'rgb(75, 192, 192)',      // Teal
+            'Estonian': 'rgb(153, 102, 255)',    // Purple
+            'Norwegian': 'rgb(255, 159, 64)',    // Orange
+            'Latvian': 'rgb(255, 99, 255)'       // Pink
+        };
+
+        // Speakers data
+        const speakersData = {
+            labels: ['English', 'Mandarin Chinese', 'Hindi', 'Spanish', 'Modern Standard Arabic', 'French', 'Bengali', 'Portuguese', 'Russian', 'Indonesian', 'Urdu', 'Standard German', 'Japanese', 'Nigerian Pidgin', 'Egyptian Arabic', 'Marathi', 'Vietnamese', 'Telugu', 'Hausa', 'Turkish', 'Western Punjabi', 'Swahili', 'Tagalog', 'Tamil', 'Yue Chinese', 'Wu Chinese', 'Iranian Persian', 'Korean', 'Thai', 'Javanese', 'Italian', 'Gujarati', 'Levantine Arabic', 'Amharic', 'Kannada', 'Bhojpuri', 'Sudanese Arabic'],
+            l1Values: [390, 990, 345, 484, 0, 74, 242, 250, 145, 75, 78, 76, 124, 5, 84, 83, 86, 83, 58, 85, 0, 4, 33, 79, 85, 83, 65, 81, 27, 0, 63, 58, 58, 35, 44, 53, 41],
+            l2Values: [1100, 194, 264, 74, 332, 238, 43, 17, 108, 177, 168, 58, 2, 116, 35, 16, 11, 13, 36, 6, 0, 83, 54, 8, 1, 0, 17, 0, 44, 0, 3, 5, 3, 25, 15, 0, 11]
+        };
+
+        // Website usage data
+        const websiteData = {
+            labels: ['English', 'Mandarin Chinese', 'Hindi', 'Spanish', 'Modern Standard Arabic', 'French', 'Bengali', 'Portuguese', 'Russian', 'Indonesian', 'Urdu', 'Standard German', 'Japanese', 'Nigerian Pidgin', 'Egyptian Arabic', 'Marathi', 'Vietnamese', 'Telugu', 'Hausa', 'Turkish', 'Western Punjabi', 'Swahili', 'Tagalog', 'Tamil', 'Yue Chinese', 'Wu Chinese', 'Iranian Persian', 'Korean', 'Thai', 'Javanese', 'Italian', 'Gujarati', 'Levantine Arabic', 'Amharic', 'Kannada', 'Bhojpuri', 'Sudanese Arabic'],
+            values: [49.1, 1.1, 0.1, 6.0, 0.5, 4.5, 0.1, 3.9, 3.8, 1.1, 0.0, 5.8, 5.1, 0.0, 0.0, 0.1, 1.1, 0.0, 0.0, 1.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.2, 0.8, 0.3, 0.0, 2.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        };
+
+        // Create colors arrays with different shades
+        const speakersColors = speakersData.labels.map(label => {
+            const baseColor = colorMap[label] || 'rgb(128, 128, 128)';
+            const rgb = baseColor.match(/\d+/g).map(Number);
+            return {
+                l1: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
+                l2: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.6)`,
+                highlight: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`
+            };
+        });
+
+        // Function to calculate total speakers
+        const totalSpeakers = speakersData.labels.map((_, index) => 
+            speakersData.l1Values[index] + speakersData.l2Values[index]
+        );
+
+        // Get first 20 languages and sort by total speakers
+        const displayCount = 20;
+        const indices = Array.from({length: displayCount}, (_, i) => i);
+        indices.sort((a, b) => totalSpeakers[b] - totalSpeakers[a]);
+
+        const displayLabels = indices.map(i => speakersData.labels[i]);
+        const displayL1Values = indices.map(i => speakersData.l1Values[i]);
+        const displayL2Values = indices.map(i => speakersData.l2Values[i]);
+        const displayWebsiteValues = indices.map(i => websiteData.values[i]);
+        const displayColors = indices.map(i => speakersColors[i]);
+
+        // Horizontal Bar Chart for Speakers
+        new Chart(document.getElementById('speakersChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: displayLabels,
+                datasets: [
+                    {
+                        label: 'L1 Speakers',
+                        data: displayL1Values,
+                        backgroundColor: displayColors.map(c => c.l1),
+                        borderColor: displayColors.map(c => c.l1),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: displayColors.map(c => c.highlight),
+                        hoverBorderColor: displayColors.map(c => c.highlight)
+                    },
+                    {
+                        label: 'L2 Speakers',
+                        data: displayL2Values,
+                        backgroundColor: displayColors.map(c => c.l2),
+                        borderColor: displayColors.map(c => c.l2),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: displayColors.map(c => c.highlight),
+                        hoverBorderColor: displayColors.map(c => c.highlight)
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'y',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            label: function(context) {
+                                // Only show tooltip for L1 dataset (index 0)
+                                if (context.datasetIndex === 0) {
+                                    const index = context.dataIndex;
+                                    const l1 = displayL1Values[index];
+                                    const l2 = displayL2Values[index];
+                                    const total = l1 + l2;
+                                    return `Total Speakers: ${total} million`;
+                                }
+                                return null; // Don't show tooltip for L2 dataset
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: function(value, context) {
+                            if (context.datasetIndex === 0) {
+                                const total = displayL1Values[context.dataIndex] + displayL2Values[context.dataIndex];
+                                return (total / 1000).toFixed(1) + 'B';
+                            }
+                            return null;
+                        },
+                        anchor: 'end',
+                        align: 'end',
+                        offset: -5
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Number of Speakers (Millions)',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                        stacked: true
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 12 }
+                        },
+                        stacked: true
+                    }
+                }
+            }
+        });
+
+        // Website Usage Chart
+        new Chart(document.getElementById('websiteChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: displayLabels,
+                datasets: [{
+                    data: displayWebsiteValues,
+                    backgroundColor: displayColors.map(c => c.l1),
+                    borderColor: displayColors.map(c => c.l1),
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    hoverBackgroundColor: displayColors.map(c => c.highlight),
+                    hoverBorderColor: displayColors.map(c => c.highlight)
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'y',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            label: function(context) {
+                                return `${context.raw}% of websites`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: function(value) {
+                            return value + '%';
+                        },
+                        anchor: 'end',
+                        align: 'end',
+                        offset: -5
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Percentage of Websites',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

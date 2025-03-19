@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Scale Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        :root {
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-color: #1e293b;
+            --human-color: rgb(249, 115, 22);
+            --monkey-color: rgb(234, 88, 12);
+            --dog-color: rgb(59, 130, 246);
+            --cat-color: rgb(37, 211, 102);
+            --mouse-color: rgb(66, 103, 178);
+            --gpt4-color: rgb(255, 69, 0);
+            --gpt3-color: rgb(255, 140, 0);
+            --gpt2-color: rgb(255, 165, 0);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-card {
+            background-color: var(--card-background);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            transition: transform 0.2s ease;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            margin: 15px auto;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .description {
+            text-align: center;
+            margin: 5px 0 30px;
+            color: #475569;
+            font-size: 1rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .chart-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chart-subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 400px;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            .chart-card h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Neural Network Scale Comparison</h1>
+    <p class="description">Comparing the number of synapses in different animal brains with AI model parameters, showing the massive scale of biological and artificial neural networks.</p>
+
+    <div class="chart-card">
+        <h2>Neural Network Scale Comparison</h2>
+        <p class="chart-subtitle">Logarithmic scale showing the vast difference in complexity between biological and artificial neural networks</p>
+        <div class="chart-container">
+            <canvas id="networkChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            labels: ['Human Brain', 'Monkey Brain', 'Dog Brain', 'Cat Brain', 'Mouse Brain', 'GPT-4', 'GPT-3', 'GPT-2'],
+            values: [100000000000000, 10000000000000, 500000000000, 300000000000, 75000000000, 1800000000000, 175000000000, 1500000000],
+            colors: [
+                'rgb(249, 115, 22)',  // Human orange
+                'rgb(234, 88, 12)',   // Monkey orange
+                'rgb(59, 130, 246)',  // Dog blue
+                'rgb(37, 211, 102)',  // Cat green
+                'rgb(66, 103, 178)',  // Mouse blue
+                'rgb(255, 69, 0)',    // GPT-4 red
+                'rgb(255, 140, 0)',   // GPT-3 orange
+                'rgb(255, 165, 0)'    // GPT-2 yellow
+            ],
+            tooltips: [
+                'Human Brain: 100 trillion synapses',
+                'Monkey Brain: 10 trillion synapses',
+                'Dog Brain: 500 billion synapses',
+                'Cat Brain: 300 billion synapses',
+                'Mouse Brain: 75 billion synapses',
+                'GPT-4: 1.8 trillion parameters',
+                'GPT-3: 175 billion parameters',
+                'GPT-2: 1.5 billion parameters'
+            ]
+        };
+
+        function formatNumber(value) {
+            if (value >= 1000000000000) {
+                return (value / 1000000000000).toFixed(1) + 'T';
+            } else if (value >= 1000000000) {
+                return (value / 1000000000).toFixed(1) + 'B';
+            }
+            return value.toFixed(1);
+        }
+
+        function addDataLabels(chart) {
+            const ctx = chart.ctx;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = '#1e293b';
+
+            chart.data.datasets[0].data.forEach((value, index) => {
+                const x = chart.getDatasetMeta(0).data[index].x;
+                const y = chart.getDatasetMeta(0).data[index].y;
+                const label = index < 5 ? formatNumber(value) + ' synapses' : formatNumber(value) + ' params';
+                ctx.fillText(label, x, y - 15);
+            });
+        }
+
+        const ctx = document.getElementById('networkChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: data.colors,
+                    borderColor: data.colors,
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#1e293b',
+                        bodyColor: '#1e293b',
+                        borderWidth: 1,
+                        borderColor: 'rgba(0, 0, 0, 0.1)',
+                        padding: 15,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            title: (tooltipItems) => {
+                                return data.tooltips[tooltipItems[0].dataIndex];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Number of Connections (Log Scale)',
+                            font: { size: 14, weight: 'bold' },
+                            padding: { bottom: 10 }
+                        },
+                        grid: { 
+                            color: 'rgba(0, 0, 0, 0.1)', 
+                            drawBorder: false 
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            callback: function(value) {
+                                return formatNumber(value);
+                            }
+                        },
+                        min: 10000000000,  // 10B
+                        max: 200000000000000  // 200T
+                    },
+                    y: { 
+                        grid: { display: false },
+                        ticks: {
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [{ afterDraw: addDataLabels }]
+        });
+    </script>
+</body>
+</html> 
