@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Pillars Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 10px;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 10px 0 40px 0;
+            gap: 40px;
+            height: 200px;
+        }
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .slider-container:hover {
+            transform: translateY(-5px);
+        }
+        .slider-container label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: normal;
+            text-align: center;
+            width: 140px;
+        }
+        input[type="range"] {
+            width: 250px;
+            height: 100px;
+            margin: 0;
+            -webkit-appearance: none;
+            background: transparent;
+            outline: none;
+            writing-mode: bt-lr;
+            -webkit-writing-mode: bt-lr;
+            transform: rotate(-90deg);
+            transform-origin: 125px 125px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: -6px;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #2980b9;
+        }
+        .value-display {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 5px;
+            padding: 5px 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-width: 80px;
+            text-align: center;
+        }
+        .pillar-icon {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin: 5px 0 10px 0;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            margin: 10px 0;
+        }
+        .total-score {
+            text-align: center;
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin: 5px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .slider-container:last-child {
+            width: 120px;
+        }
+        .slider-container:last-child input[type="range"] {
+            width: 250px;
+            transform-origin: 125px 125px;
+        }
+        .slider-container:last-child .value-display {
+            min-width: 80px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .controls {
+                flex-direction: row;
+                height: 150px;
+                gap: 20px;
+            }
+            .slider-container {
+                width: 80px;
+            }
+            .slider-container:last-child {
+                width: 100px;
+            }
+            .slider-container label {
+                width: 100px;
+                font-size: 0.9em;
+            }
+            input[type="range"] {
+                width: 180px;
+                transform-origin: 90px 90px;
+            }
+            .slider-container:last-child input[type="range"] {
+                width: 220px;
+                transform-origin: 110px 110px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Three Pillars of AI Skills</h1>
+        <div class="controls">
+            <div class="slider-container">
+                <div class="pillar-icon">🔬</div>
+                <label for="research">Research</label>
+                <input type="range" id="research" min="0" max="100" value="70" orient="vertical">
+                <div class="value-display">70%</div>
+            </div>
+            <div class="slider-container">
+                <div class="pillar-icon">💻</div>
+                <label for="programming">Programming</label>
+                <input type="range" id="programming" min="0" max="100" value="85" orient="vertical">
+                <div class="value-display">85%</div>
+            </div>
+            <div class="slider-container">
+                <div class="pillar-icon">💼</div>
+                <label for="business">Business Building</label>
+                <input type="range" id="business" min="0" max="100" value="60" orient="vertical">
+                <div class="value-display">60%</div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="pillarsChart"></canvas>
+        </div>
+        <div class="total-score">
+            Overall Score: <span id="totalScore">71.7%</span>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('pillarsChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Business Building', 'Programming', 'Research'],
+                datasets: [{
+                    label: 'Skills Level',
+                    data: [60, 85, 70],
+                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(52, 152, 219, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#2c3e50'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.r}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update chart and total score when sliders change
+        function updateChart() {
+            const research = parseInt(document.getElementById('research').value);
+            const programming = parseInt(document.getElementById('programming').value);
+            const business = parseInt(document.getElementById('business').value);
+
+            // Update value displays
+            document.querySelector('#research + .value-display').textContent = research + '%';
+            document.querySelector('#programming + .value-display').textContent = programming + '%';
+            document.querySelector('#business + .value-display').textContent = business + '%';
+
+            // Update chart data - maintain the order: Business, Programming, Research
+            chart.data.datasets[0].data = [business, programming, research];
+            chart.update();
+
+            // Calculate and update total score
+            const totalScore = ((research + programming + business) / 3).toFixed(1);
+            document.getElementById('totalScore').textContent = totalScore + '%';
+        }
+
+        // Add event listeners to sliders
+        document.getElementById('research').addEventListener('input', updateChart);
+        document.getElementById('programming').addEventListener('input', updateChart);
+        document.getElementById('business').addEventListener('input', updateChart);
+    </script>
+</body>
+</html> 
