@@ -3,83 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Visualizations</title>
+    <title>Data Visualizations Collection</title>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --text-secondary: #666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
             line-height: 1.6;
         }
-        h1 {
-            color: #333;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
             text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .visualization-list {
-            list-style-type: none;
-            padding: 0;
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
-        .visualization-item {
-            margin: 15px 0;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
         }
-        .visualization-item a {
-            color: #0366d6;
+
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .visualization-card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .visualization-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .visualization-card a {
+            color: var(--secondary-color);
             text-decoration: none;
-            font-weight: bold;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
         }
-        .visualization-item a:hover {
+
+        .visualization-card a:hover {
             text-decoration: underline;
         }
+
         .description {
-            color: #666;
-            margin-top: 5px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
+        .category {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .visualization-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Data Visualizations Collection</h1>
-    <ul class="visualization-list">
-        <li class="visualization-item">
-            <a href="pillars.html">Pillars Visualization</a>
-            <div class="description">Interactive visualization of pillars data</div>
-        </li>
-        <li class="visualization-item">
-            <a href="youtube_stats.html">YouTube Statistics</a>
-            <div class="description">Visualization of YouTube statistics data</div>
-        </li>
-        <li class="visualization-item">
-            <a href="brain_comparison.html">Brain Comparison</a>
-            <div class="description">Comparative analysis of brain-related data</div>
-        </li>
-        <li class="visualization-item">
-            <a href="daily_data_generation.html">Daily Data Generation</a>
-            <div class="description">Visualization of daily data generation metrics</div>
-        </li>
-        <li class="visualization-item">
-            <a href="language_comparison_bar_chart.html">Language Comparison Bar Chart</a>
-            <div class="description">Bar chart comparing different languages</div>
-        </li>
-        <li class="visualization-item">
-            <a href="world_languages.html">World Languages</a>
-            <div class="description">Global language distribution visualization</div>
-        </li>
-        <li class="visualization-item">
-            <a href="language_pie_charts.html">Language Pie Charts</a>
-            <div class="description">Pie charts showing language distribution</div>
-        </li>
-        <li class="visualization-item">
-            <a href="language_comparison.html">Language Comparison</a>
-            <div class="description">Detailed language comparison visualization</div>
-        </li>
-        <li class="visualization-item">
-            <a href="language_stats_visualization.html">Language Statistics</a>
-            <div class="description">Comprehensive language statistics visualization</div>
-        </li>
-    </ul>
+    <header>
+        <div class="container">
+            <h1>Data Visualizations Collection</h1>
+            <p class="subtitle">Interactive visualizations exploring various data insights</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="visualization-grid">
+            <div class="visualization-card">
+                <span class="category">Data Analysis</span>
+                <a href="pillars.html">Pillars Visualization</a>
+                <div class="description">Interactive visualization of pillars data with detailed analysis</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Social Media</span>
+                <a href="youtube_stats.html">YouTube Statistics</a>
+                <div class="description">Visualization of YouTube statistics and trends</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Neuroscience</span>
+                <a href="brain_comparison.html">Brain Comparison</a>
+                <div class="description">Comparative analysis of brain-related data and structures</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Data Generation</span>
+                <a href="daily_data_generation.html">Daily Data Generation</a>
+                <div class="description">Visualization of daily data generation metrics and patterns</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Language Analysis</span>
+                <a href="language_comparison_bar_chart.html">Language Comparison Bar Chart</a>
+                <div class="description">Bar chart comparing different languages and their usage</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Global Data</span>
+                <a href="world_languages.html">World Languages</a>
+                <div class="description">Global language distribution and usage patterns</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Language Analysis</span>
+                <a href="language_pie_charts.html">Language Pie Charts</a>
+                <div class="description">Pie charts showing language distribution and proportions</div>
+            </div>
+
+            <div class="visualization-card">
+                <span class="category">Language Analysis</span>
+                <a href="language_comparison.html">Language Comparison</a>
+                <div class="description">Detailed language comparison and analysis visualization</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 Data Visualizations Collection. All visualizations are interactive and responsive.</p>
+        </div>
+    </footer>
 </body>
 </html> 

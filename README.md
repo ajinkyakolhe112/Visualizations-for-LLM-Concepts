@@ -7,7 +7,7 @@ A web-based tool for visualizing and comparing different LLM tokenizers. This to
 - Add custom tokenizers from HuggingFace
 
 ## Live Demo
-Visit the live demo at: [https://YOUR_USERNAME.github.io/visualizations/](https://YOUR_USERNAME.github.io/visualizations/)
+Visit the live demo at: [https://ajinkyakolhe112.github.io/LLM-Visualizations/](https://ajinkyakolhe112.github.io/LLM-Visualizations/)
 
 ## Features
 - Real-time tokenization
