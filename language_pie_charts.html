@@ -75,8 +75,8 @@
 
         // Define consistent colors for languages
         const languageColors = {
-            'English': 'rgba(255, 99, 132, 0.7)',    // Red
-            'Spanish': 'rgba(54, 162, 235, 0.7)',    // Blue
+            'English': 'rgba(54, 162, 235, 0.7)',    // Blue
+            'Spanish': 'rgba(0, 119, 204, 0.7)',     // Darker Blue
             'Russian': 'rgba(255, 206, 86, 0.7)',    // Yellow
             'German': 'rgba(75, 192, 192, 0.7)',     // Teal
             'French': 'rgba(153, 102, 255, 0.7)',    // Purple
@@ -87,7 +87,7 @@
             'Arabic': 'rgba(0, 128, 0, 0.7)',        // Green
             'Bengali': 'rgba(128, 128, 0, 0.7)',     // Olive
             'Urdu': 'rgba(0, 128, 128, 0.7)',        // Teal
-            'Indic languages': 'rgba(255, 0, 0, 0.7)', // Red
+            'Indic languages': 'rgba(255, 0, 0, 0.9)', // Brighter Red
             'Others': 'rgba(169, 169, 169, 0.7)'     // Dark Gray
         };
 
@@ -166,9 +166,11 @@
                     data: languageData.internetUsage.data,
                     backgroundColor: languageData.internetUsage.labels.map(label => getLanguageColor(label)),
                     borderColor: languageData.internetUsage.labels.map(label => getLanguageColor(label).replace('0.7', '1')),
-                    borderWidth: 1,
+                    borderWidth: languageData.internetUsage.labels.map(label => 
+                        label === 'Indic languages' ? 5 : 1
+                    ),
                     offset: languageData.internetUsage.labels.map(label => 
-                        (label === 'Hindi' || label === 'Bengali') ? 20 : 0
+                        label === 'Indic languages' ? 40 : 0
                     )
                 }]
             },
