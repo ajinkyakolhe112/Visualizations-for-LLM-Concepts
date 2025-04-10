@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black and White Bird Image Analysis</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --text-secondary: #666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .visualization-card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .analysis-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .image-section, .pixel-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(50, 10px);
+            gap: 1px;
+            background-color: #ccc;
+            border: 1px solid #ccc;
+            width: fit-content;
+            margin-top: 1rem;
+        }
+
+        .pixel {
+            width: 10px;
+            height: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            font-weight: bold;
+            background-color: white;
+            color: black;
+            overflow: hidden;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .analysis-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Black and White Bird Image Analysis</h1>
+            <p class="subtitle">Detailed pixel analysis of the black and white bird image</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="visualization-card">
+            <div class="analysis-container">
+                <div class="image-section">
+                    <h2>Original Image</h2>
+                    <img src="black_and_white_bird.jpg" alt="Black and White Bird" style="max-width: 100%; height: auto; border: 1px solid #ccc;">
+                </div>
+                <div class="pixel-section">
+                    <h2>Pixel Analysis</h2>
+                    <div id="birdPixelGrid" class="pixel-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Visualizations Collection</a>
+    </div>
+
+    <script>
+        // Load and process the bird image
+        const birdImage = new Image();
+        birdImage.onload = function() {
+            const pixelGrid = document.getElementById('birdPixelGrid');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match the grid size
+            canvas.width = 50;
+            canvas.height = 50;
+            
+            // Draw image onto canvas
+            ctx.drawImage(birdImage, 0, 0, 50, 50);
+            
+            // Get pixel data
+            const imageData = ctx.getImageData(0, 0, 50, 50);
+            const data = imageData.data;
+            
+            // Clear previous grid
+            pixelGrid.innerHTML = '';
+            
+            // Create pixel grid
+            for (let y = 0; y < 50; y++) {
+                for (let x = 0; x < 50; x++) {
+                    const index = (y * 50 + x) * 4;
+                    const r = data[index];
+                    const g = data[index + 1];
+                    const b = data[index + 2];
+                    const gray = Math.round((r + g + b) / 3);
+                    
+                    const pixel = document.createElement('div');
+                    pixel.style.width = '10px';
+                    pixel.style.height = '10px';
+                    pixel.style.backgroundColor = `rgb(${gray}, ${gray}, ${gray})`;
+                    pixel.style.color = gray < 128 ? 'white' : 'black';
+                    pixel.style.fontSize = '6px';
+                    pixel.style.display = 'flex';
+                    pixel.style.alignItems = 'center';
+                    pixel.style.justifyContent = 'center';
+                    pixel.style.fontWeight = 'bold';
+                    pixel.textContent = gray;
+                    
+                    pixelGrid.appendChild(pixel);
+                }
+            }
+        };
+        
+        // Load the bird image
+        birdImage.src = 'black_and_white_bird.jpg';
+    </script>
+</body>
+</html> 
