@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Pixel Value Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            /* Increased max-width to accommodate larger grid */
+            max-width: 1200px; 
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .visualization-area {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap; 
+            position: relative; /* Needed for absolute positioning of zoom */
+        }
+        .image-display,
+        .pixel-grid-container {
+            flex: 1; 
+            /* Adjusted min-width for larger grid */
+            min-width: 550px; 
+        }
+        canvas#displayCanvas {
+            border: 1px solid #ccc;
+            max-width: 100%; 
+            height: auto;  
+            display: block; 
+            background-color: #eee; 
+            cursor: crosshair; /* Indicate interaction possible */
+        }
+        canvas#processingCanvas,
+        canvas#originalImageCanvas {
+            display: none; /* Hide helper canvases */
+        }
+        .pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(50, 20px); /* Increased from 10px to 20px */
+            gap: 1px;
+            background-color: #ccc;
+            border: 1px solid #ccc;
+            width: fit-content;
+            margin-top: 5px;
+        }
+        .pixel {
+            width: 20px; /* Increased from 10px to 20px */
+            height: 20px; /* Increased from 10px to 20px */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px; /* Added font size */
+            font-weight: bold;
+            background-color: white;
+            color: black;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .pixel:hover {
+            transform: scale(1.5);
+            z-index: 1;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        h1, h3 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* --- Zoom Feature Styles --- */
+        #zoom-container {
+            position: absolute;
+            border: 2px solid #555;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            pointer-events: none; /* Don't let it interfere with mouse */
+            display: none; /* Hidden by default */
+            padding: 10px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+        #zoomCanvas {
+            display: block;
+            width: 210px; /* Increased from 105px to 210px */
+            height: 210px;
+            border: 1px solid #aaa;
+            margin-bottom: 5px;
+        }
+        #zoomValues {
+            font-size: 12px;
+            font-family: monospace;
+            text-align: center;
+            color: #333;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+        .pixel-value {
+            position: absolute;
+            font-size: 8px;
+            font-weight: bold;
+            text-shadow: 0 0 2px white;
+            pointer-events: none;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Pixel Value Visualizer</h1>
+        
+        <div>
+            <label for="imageInput">Upload an Image:</label>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <div class="visualization-area">
+            <div class="image-display">
+                <h3>Original Image (Hover for Zoom)</h3>
+                <canvas id="displayCanvas" width="400" height="400"></canvas> 
+                 <!-- Zoom container -->
+                <div id="zoom-container">
+                    <canvas id="zoomCanvas" width="210" height="210"></canvas>
+                    <div id="zoomValues">RGB: (---, ---, ---)</div>
+                </div>
+            </div>
+            <div class="pixel-grid-container">
+                <!-- Updated heading -->
+                <h3>Pixel Values (50x50 Grid)</h3> 
+                <div id="pixelGrid" class="pixel-grid"></div>
+            </div>
+        </div>
+        
+        <!-- Hidden canvases -->
+        <canvas id="processingCanvas" width="50" height="50"></canvas>
+        <canvas id="originalImageCanvas"></canvas> 
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const displayCanvas = document.getElementById('displayCanvas');
+        const processingCanvas = document.getElementById('processingCanvas');
+        const originalImageCanvas = document.getElementById('originalImageCanvas'); // Canvas for original data
+        const pixelGrid = document.getElementById('pixelGrid');
+        const displayCtx = displayCanvas.getContext('2d');
+        const processingCtx = processingCanvas.getContext('2d');
+        const originalImageCtx = originalImageCanvas.getContext('2d'); // Context for original data
+
+        // Zoom elements
+        const zoomContainer = document.getElementById('zoom-container');
+        const zoomCanvas = document.getElementById('zoomCanvas');
+        const zoomCtx = zoomCanvas.getContext('2d');
+        const zoomValues = document.getElementById('zoomValues');
+        
+        // Disable smoothing for crisp zoom pixels
+        zoomCtx.imageSmoothingEnabled = false;
+        // For older browser compatibility:
+        zoomCtx.mozImageSmoothingEnabled = false;
+        zoomCtx.webkitImageSmoothingEnabled = false;
+        zoomCtx.msImageSmoothingEnabled = false;
+
+        const MAX_DISPLAY_WIDTH = 400;
+        const MAX_DISPLAY_HEIGHT = 400;
+        // Updated grid size constant
+        const GRID_SIZE = 50;
+        const ZOOM_LEVEL = 30; // Increased from 15 to 30 for larger zoom
+        const ZOOM_AREA = 7; // Keep 7x7 area but show it larger
+
+        let originalImg = null; // Store the loaded image object
+        let displayScaleX = 1;
+        let displayScaleY = 1;
+
+        // Initial placeholder message
+        function drawPlaceholder(canvas, ctx, text) {
+            ctx.fillStyle = '#eee';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#777';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            // Clear zoom if placeholder is shown
+            if (zoomContainer) zoomContainer.style.display = 'none';
+            if (pixelGrid) pixelGrid.innerHTML = ''; // Clear grid too
+        }
+
+        drawPlaceholder(displayCanvas, displayCtx, 'Upload an image to view');
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    originalImg = new Image(); // Create new image object
+                    originalImg.onload = function() {
+                        // --- Store Original Image Data ---
+                        originalImageCanvas.width = originalImg.width;
+                        originalImageCanvas.height = originalImg.height;
+                        originalImageCtx.drawImage(originalImg, 0, 0);
+
+                        // --- Display Scaled Image --- 
+                        let displayWidth = originalImg.width;
+                        let displayHeight = originalImg.height;
+
+                        displayScaleX = 1;
+                        displayScaleY = 1;
+
+                        if (displayWidth > MAX_DISPLAY_WIDTH) {
+                            displayScaleX = MAX_DISPLAY_WIDTH / displayWidth;
+                            displayWidth = MAX_DISPLAY_WIDTH;
+                            displayHeight *= displayScaleX;
+                            displayScaleY = displayScaleX; // Keep aspect ratio
+                        }
+                        if (displayHeight > MAX_DISPLAY_HEIGHT) {
+                            displayScaleY = MAX_DISPLAY_HEIGHT / displayHeight;
+                            displayHeight = MAX_DISPLAY_HEIGHT;
+                            displayWidth *= displayScaleY;
+                             // Adjust scaleX if height was the limiting factor
+                            if (displayScaleX === 1) displayScaleX = displayScaleY; 
+                        }
+                        
+                        displayCanvas.width = displayWidth;
+                        displayCanvas.height = displayHeight;
+                        displayCtx.drawImage(originalImg, 0, 0, displayWidth, displayHeight);
+
+                        // --- Process for Pixel Grid --- 
+                        processingCanvas.width = GRID_SIZE;
+                        processingCanvas.height = GRID_SIZE;
+                        processingCtx.drawImage(originalImg, 0, 0, GRID_SIZE, GRID_SIZE);
+                        const imageData = processingCtx.getImageData(0, 0, GRID_SIZE, GRID_SIZE);
+                        const data = imageData.data;
+
+                        // --- Update Pixel Grid (50x50) --- 
+                        pixelGrid.innerHTML = ''; 
+                        // Updated grid columns using the constant & smaller size
+                        pixelGrid.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 20px)`;
+
+                        for (let y = 0; y < GRID_SIZE; y++) {
+                            for (let x = 0; x < GRID_SIZE; x++) {
+                                const index = (y * GRID_SIZE + x) * 4;
+                                const r = data[index];
+                                const g = data[index + 1];
+                                const b = data[index + 2];
+                                const gray = Math.round((r + g + b) / 3);
+                                
+                                const pixel = document.createElement('div');
+                                pixel.className = 'pixel';
+                                pixel.style.backgroundColor = `rgb(${gray}, ${gray}, ${gray})`;
+                                pixel.style.color = gray < 128 ? 'white' : 'black';
+                                pixel.textContent = gray;
+                                
+                                pixelGrid.appendChild(pixel);
+                            }
+                        }
+                    };
+
+                    originalImg.onerror = function() {
+                        console.error("Error loading image.");
+                        drawPlaceholder(displayCanvas, displayCtx, 'Error loading image');
+                        originalImg = null; // Reset
+                    };
+                    
+                    originalImg.src = event.target.result; 
+                };
+
+                reader.onerror = function() {
+                    console.error("Error reading file.");
+                     drawPlaceholder(displayCanvas, displayCtx, 'Error reading file');
+                     originalImg = null; // Reset
+                };
+                
+                reader.readAsDataURL(file); 
+            }
+        });
+
+        // --- Zoom Feature Logic ---
+        displayCanvas.addEventListener('mousemove', function(e) {
+            if (!originalImg) return; // No image loaded
+
+            const rect = displayCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Map display coordinates to original image coordinates
+            const originalX = Math.floor(mouseX / displayScaleX);
+            const originalY = Math.floor(mouseY / displayScaleY);
+
+            // Ensure coordinates are within the original image bounds
+            if (originalX < 0 || originalX >= originalImg.width || originalY < 0 || originalY >= originalImg.height) {
+                zoomContainer.style.display = 'none';
+                return;
+            }
+
+            // --- Draw Zoomed Image ---
+            const zoomHalf = Math.floor(ZOOM_AREA / 2);
+            const sx = Math.max(0, originalX - zoomHalf); // Source X
+            const sy = Math.max(0, originalY - zoomHalf); // Source Y
+            const sWidth = Math.min(originalImg.width - sx, ZOOM_AREA); // Source Width
+            const sHeight = Math.min(originalImg.height - sy, ZOOM_AREA); // Source Height
+
+            // Clear previous zoom canvas
+            zoomCtx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
+            
+            // Draw magnified pixels from original image canvas
+            zoomCtx.drawImage(
+                originalImageCanvas, // Source canvas
+                sx, sy,           // Source x, y
+                sWidth, sHeight,  // Source width, height
+                0, 0,             // Destination x, y
+                sWidth * ZOOM_LEVEL, sHeight * ZOOM_LEVEL // Destination width, height (magnified)
+            );
+
+            // --- Get and Display RGB Values ---
+            const pixelData = originalImageCtx.getImageData(originalX, originalY, 1, 1).data;
+            const r = pixelData[0];
+            const g = pixelData[1];
+            const b = pixelData[2];
+            const gray = Math.round((r + g + b) / 3);
+            zoomValues.textContent = `RGB: (${r}, ${g}, ${b})\nGrayscale: ${gray}`;
+
+            // --- Add pixel value labels ---
+            // Clear previous labels
+            const existingLabels = zoomContainer.querySelectorAll('.pixel-value');
+            existingLabels.forEach(label => label.remove());
+
+            // Add new labels for each pixel
+            for (let y = 0; y < sHeight; y++) {
+                for (let x = 0; x < sWidth; x++) {
+                    const pixelX = sx + x;
+                    const pixelY = sy + y;
+                    if (pixelX < originalImg.width && pixelY < originalImg.height) {
+                        const pixelData = originalImageCtx.getImageData(pixelX, pixelY, 1, 1).data;
+                        const r = pixelData[0];
+                        const g = pixelData[1];
+                        const b = pixelData[2];
+                        const gray = Math.round((r + g + b) / 3);
+
+                        const label = document.createElement('div');
+                        label.className = 'pixel-value';
+                        label.textContent = gray;
+                        label.style.left = `${x * ZOOM_LEVEL + 5}px`;
+                        label.style.top = `${y * ZOOM_LEVEL + 5}px`;
+                        label.style.color = gray < 128 ? 'white' : 'black';
+                        zoomContainer.appendChild(label);
+                    }
+                }
+            }
+
+            // --- Position and Show Zoom Container ---
+            const zoomX = e.pageX + 15;
+            const zoomY = e.pageY + 15;
+            zoomContainer.style.left = `${zoomX}px`;
+            zoomContainer.style.top = `${zoomY}px`;
+            zoomContainer.style.display = 'block';
+        });
+
+        displayCanvas.addEventListener('mouseleave', function() {
+            zoomContainer.style.display = 'none';
+        });
+
+    </script>
+</body>
+</html> 
