@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Data Generation</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --background-color: #f8fafc;
             --card-background: #ffffff;
             --text-color: #1e293b;
-            --youtube-color: rgb(249, 115, 22);
+            --youtube-color: #FF0000;  /* Official YouTube red */
             --photos-color: rgb(59, 130, 246);
             --whatsapp-color: rgb(37, 211, 102);
             --facebook-color: rgb(66, 103, 178);
@@ -80,6 +81,22 @@
             color: var(--text-color);
             text-align: center;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .platform-icon {
+            font-size: 1.5rem;
+        }
+
+        .youtube-icon {
+            color: var(--youtube-color);
+        }
+
+        .photos-icon {
+            color: var(--photos-color);
         }
 
         .chart-subtitle {
@@ -114,44 +131,48 @@
     </style>
 </head>
 <body>
-    <h1>Daily Data Generation Visualization</h1>
-    <p class="description">Comparing daily data generation across different platforms, showing the massive scale of digital content creation and communication.</p>
+    <h1>Tech Giants' Data Advantage</h1>
+    <p class="description">Visualizing the massive scale of daily data collection by Google and Meta (Facebook), showcasing their unparalleled data processing capabilities and market dominance.</p>
 
     <div class="charts-grid">
         <div class="chart-card">
-            <h2>Large-Scale Content Generation</h2>
-            <p class="chart-subtitle">Total Daily Data: 805 Terabytes</p>
+            <h2>
+                <i class="fab fa-google platform-icon" style="color: #4285F4;"></i>
+                Google's Data Empire
+            </h2>
+            <p class="chart-subtitle">Daily Data Collection: 1.9 Petabytes</p>
             <div class="chart-container">
                 <canvas id="largeScaleChart"></canvas>
             </div>
         </div>
 
         <div class="chart-card">
-            <h2>Social Media Text Data</h2>
-            <p class="chart-subtitle">Total Daily Data: 16.7 Terabytes</p>
+            <h2>
+                <i class="fab fa-instagram platform-icon" style="color: #E4405F;"></i>
+                Instagram's Photo Data
+            </h2>
+            <p class="chart-subtitle">Daily Data Collection: 136 Terabytes</p>
             <div class="chart-container">
-                <canvas id="socialMediaChart"></canvas>
+                <canvas id="instagramChart"></canvas>
             </div>
         </div>
     </div>
 
     <script>
         const largeScaleData = {
-            labels: ['YouTube', 'Photos'],
-            values: [312, 493], // Values in TB
+            labels: ['YouTube', 'Google Photos'],
+            values: [1406, 493], // Values in TB/day
             colors: [
-                'rgb(249, 115, 22)',  // YouTube orange
-                'rgb(59, 130, 246)'   // Photos blue
+                '#FF0000',  // YouTube red
+                '#4285F4'   // Google blue
             ]
         };
 
-        const socialMediaData = {
-            labels: ['WhatsApp', 'Facebook', 'Reddit'],
-            values: [8, 8.7, 0.0035], // Values in TB
+        const instagramData = {
+            labels: ['Instagram Photos'],
+            values: [136], // Values in TB/day
             colors: [
-                'rgb(37, 211, 102)',  // WhatsApp green
-                'rgb(66, 103, 178)',  // Facebook blue
-                'rgb(255, 69, 0)'     // Reddit orange
+                '#E4405F'   // Instagram pink
             ]
         };
 
@@ -165,7 +186,8 @@
             chart.data.datasets[0].data.forEach((value, index) => {
                 const x = chart.getDatasetMeta(0).data[index].x;
                 const y = chart.getDatasetMeta(0).data[index].y;
-                ctx.fillText(value.toFixed(1) + ' TB', x, y - 15);
+                const formattedValue = value < 0.1 ? value.toFixed(4) : value.toFixed(1);
+                ctx.fillText(formattedValue + ' TB/day', x, y - 15);
             });
         }
 
@@ -190,7 +212,7 @@
                     },
                     callbacks: {
                         label: (context) => {
-                            return `Daily Data: ${context.raw.toFixed(1)} TB`;
+                            return `Daily Data: ${context.raw.toFixed(1)} TB/day`;
                         }
                     }
                 }
@@ -200,7 +222,7 @@
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Daily Data Generation (Terabytes)',
+                        text: 'Daily Data Generation (TB/day)',
                         font: { size: 14, weight: 'bold' },
                         padding: { bottom: 10 }
                     },
@@ -245,22 +267,22 @@
                     ...chartOptions.scales,
                     y: {
                         ...chartOptions.scales.y,
-                        max: 600
+                        max: 1500
                     }
                 }
             },
             plugins: [{ afterDraw: addDataLabels }]
         });
 
-        // Create social media chart
-        new Chart(document.getElementById('socialMediaChart').getContext('2d'), {
+        // Create Instagram chart
+        new Chart(document.getElementById('instagramChart').getContext('2d'), {
             type: 'bar',
             data: {
-                labels: socialMediaData.labels,
+                labels: instagramData.labels,
                 datasets: [{
-                    data: socialMediaData.values,
-                    backgroundColor: socialMediaData.colors,
-                    borderColor: socialMediaData.colors,
+                    data: instagramData.values,
+                    backgroundColor: instagramData.colors,
+                    borderColor: instagramData.colors,
                     borderWidth: 1,
                     borderRadius: 6
                 }]
@@ -271,12 +293,61 @@
                     ...chartOptions.scales,
                     y: {
                         ...chartOptions.scales.y,
-                        max: 10
+                        max: 150
                     }
                 }
             },
             plugins: [{ afterDraw: addDataLabels }]
         });
+
+        // Add icons after charts are rendered
+        function addIconsToCharts() {
+            // Large Scale Chart Icons
+            const largeScaleLabels = document.querySelectorAll('#largeScaleChart + .chart-labels');
+            if (largeScaleLabels.length === 0) {
+                const labelsDiv = document.createElement('div');
+                labelsDiv.className = 'chart-labels';
+                labelsDiv.style.display = 'flex';
+                labelsDiv.style.justifyContent = 'space-around';
+                labelsDiv.style.marginTop = '10px';
+                document.getElementById('largeScaleChart').parentNode.appendChild(labelsDiv);
+
+                // YouTube icon
+                const youtubeIcon = document.createElement('i');
+                youtubeIcon.className = 'fab fa-youtube';
+                youtubeIcon.style.color = '#FF0000';
+                youtubeIcon.style.fontSize = '24px';
+                labelsDiv.appendChild(youtubeIcon);
+
+                // Google Photos icon
+                const googlePhotosIcon = document.createElement('i');
+                googlePhotosIcon.className = 'fab fa-google';
+                googlePhotosIcon.style.color = '#4285F4';
+                googlePhotosIcon.style.fontSize = '24px';
+                labelsDiv.appendChild(googlePhotosIcon);
+            }
+
+            // Instagram Chart Icons
+            const instagramLabels = document.querySelectorAll('#instagramChart + .chart-labels');
+            if (instagramLabels.length === 0) {
+                const labelsDiv = document.createElement('div');
+                labelsDiv.className = 'chart-labels';
+                labelsDiv.style.display = 'flex';
+                labelsDiv.style.justifyContent = 'center';
+                labelsDiv.style.marginTop = '10px';
+                document.getElementById('instagramChart').parentNode.appendChild(labelsDiv);
+
+                // Instagram icon
+                const instagramIcon = document.createElement('i');
+                instagramIcon.className = 'fab fa-instagram';
+                instagramIcon.style.color = '#E4405F';
+                instagramIcon.style.fontSize = '24px';
+                labelsDiv.appendChild(instagramIcon);
+            }
+        }
+
+        // Call the function after charts are rendered
+        setTimeout(addIconsToCharts, 100);
     </script>
 </body>
 </html> 

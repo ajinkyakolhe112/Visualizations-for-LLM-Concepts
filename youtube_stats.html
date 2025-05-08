@@ -121,6 +121,19 @@
             }
         };
 
+        // Verify storage calculations
+        console.log('YouTube Storage Calculations:');
+        data.youtube.values.forEach((value, index) => {
+            const storage = value * 300; // 300 PB per billion videos
+            console.log(`${data.youtube.years[index]}: ${value}B videos = ${storage} PB`);
+        });
+
+        console.log('\nPhotos Storage Calculations:');
+        data.photos.values.forEach((value, index) => {
+            const storage = value * 2000; // 2000 PB per trillion photos
+            console.log(`${data.photos.years[index]}: ${value}T photos = ${storage} PB`);
+        });
+
         function calculateGrowth(values) {
             return values.map((value, index) => {
                 if (index === 0) return 0;
@@ -158,11 +171,25 @@
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     titleColor: '#1e293b',
                     bodyColor: '#1e293b',
-                    borderWidth: 1,
-                    padding: 12
+                    borderWidth: 2,
+                    borderColor: 'rgba(0, 0, 0, 0.2)',
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    cornerRadius: 8,
+                    displayColors: false
                 }
             },
             scales: {
@@ -201,9 +228,15 @@
                             borderColor: color.replace('rgb', 'rgba').replace(')', ', 0.2)'),
                             callbacks: {
                                 label: (context) => {
+                                    const value = context.raw;
+                                    const prevValue = context.dataIndex === 0 ? 0 : chartData.values[context.dataIndex - 1];
+                                    const yearlyValue = value - prevValue;
+                                    const yearlyStorage = yearlyValue * storageMultiplier;
                                     return [
-                                        `Total ${unit}: ${context.raw}${unit === 'Photos' ? 'T' : 'B'}`,
-                                        `Storage: ${(context.raw * storageMultiplier * 1000).toFixed(0)} PB`
+                                        `Total ${unit}: ${value}${unit === 'Photos' ? 'T' : 'B'}`,
+                                        `New ${unit} this year: ${yearlyValue.toFixed(2)}${unit === 'Photos' ? 'T' : 'B'}`,
+                                        `Storage this year: ${yearlyStorage.toFixed(0)} PB`,
+                                        `Year: ${chartData.years[context.dataIndex]}`
                                     ];
                                 }
                             }
